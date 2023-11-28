@@ -17,7 +17,7 @@ from utils.torch_utils import select_device, load_classifier, time_synchronized,
 random.seed(1)
 
 def detect(save_img=False):
-    source, weights, view_img, save_txt, imgsz, trace, search = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace, opt.search
+    source, weights, view_img, save_txt, imgsz, trace, search, show_text = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace, opt.search, opt.show_text
     save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
         ('rtsp://', 'rtmp://', 'http://', 'https://'))
@@ -96,6 +96,7 @@ def detect(save_img=False):
         if not _classes and search:
             _classes = []
             for i in search:
+             i = i.replace('_',' ')
              _classes .append(names.index(i))
 
 
@@ -127,9 +128,11 @@ def detect(save_img=False):
                     n = (det[:, -1] == c).sum()  
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  
                 
-                #Muestra los resutados en video
-                if dataset.mode != 'image':
+                #Muestra los resutados en video o en imagen si se quiere
+                if dataset.mode != 'image': 
                         cv2.putText(im0, s, (20,100), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 2)
+                elif show_text:
+                        cv2.putText(im0, s, (20,70), cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 2)
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
@@ -210,6 +213,7 @@ if __name__ == '__main__':
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--no-trace', action='store_true', help='don`t trace model')
     parser.add_argument('--search', nargs='+', type=str, default='', help='Filtra por nombre de clase')
+    parser.add_argument('--show-text', action='store_true', help='Muestra texto aunque sea una imagen')
     opt = parser.parse_args()
     print(opt)
     #check_requirements(exclude=('pycocotools', 'thop'))
